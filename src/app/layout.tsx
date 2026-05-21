@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Syncopate, Inter } from "next/font/google";
 import "./globals.css";
 
+const isProd = process.env.NODE_ENV === 'production';
+const prefix = isProd ? '/Centenario' : '';
+
 const syncopate = Syncopate({
   weight: ["400", "700"],
   subsets: ["latin"],
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
   title: "Lamborghini Centenario V12 // Hyper Performance Telemetry",
   description: "Experience the high-performance deconstruction protocol of the naturally aspirated Lamborghini Centenario V12.",
   icons: {
-    icon: "/Lamborghini-logo.png"
+    icon: `${prefix}/Lamborghini-logo.png`
   },
 };
 
