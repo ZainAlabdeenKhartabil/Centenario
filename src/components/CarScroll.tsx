@@ -28,6 +28,9 @@ export default function CarScroll() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mouseRef = useRef({ x: 0, y: 0 });
 
+  const isProd = process.env.NODE_ENV === 'production';
+  const prefix = isProd ? '/Centenario' : '';
+
   useEffect(() => {
     let loadedCount = 0;
     const images: HTMLImageElement[] = [];
@@ -35,7 +38,7 @@ export default function CarScroll() {
     for (let i = 1; i <= totalImages; i++) {
       const img = new Image();
       const paddedIndex = String(i).padStart(3, "0");
-      img.src = `/frames/ezgif-frame-${paddedIndex}.jpg`;
+      img.src = `${prefix}/frames/ezgif-frame-${paddedIndex}.jpg`;
 
       const handleImageLoad = () => {
         loadedCount++;
