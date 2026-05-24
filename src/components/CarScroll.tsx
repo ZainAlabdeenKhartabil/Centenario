@@ -64,33 +64,35 @@ export default function CarScroll() {
     offset: ["start start", "end end"],
   });
 
-  const drawImageCover = useCallback((ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
-    const canvas = ctx.canvas;
-    const imgWidth = img.width;
-    const imgHeight = img.height;
+  const drawImageCover = useCallback(
+    (ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
+      const canvas = ctx.canvas;
 
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-    const imgRatio = imgWidth / imgHeight;
-    const canvasRatio = canvasWidth / canvasHeight;
+      const imgWidth = img.naturalWidth || img.width;
+      const imgHeight = img.naturalHeight || img.height;
 
-    let drawWidth = canvasWidth;
-    let drawHeight = canvasHeight;
-    let offsetX = 0;
-    let offsetY = 0;
+      if (!imgWidth || !imgHeight) return;
 
-    if (canvasRatio > imgRatio) {
-      drawHeight = canvasWidth / imgRatio;
-      offsetY = (canvasHeight - drawHeight) / 2;
-    } else {
-      drawWidth = canvasHeight * imgRatio;
-      offsetX = (canvasWidth - drawWidth) / 2;
-    }
+      const scale = Math.max(
+        viewportWidth / imgWidth,
+        viewportHeight / imgHeight
+      );
 
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    ctx.drawImage(img, 0, 0, imgWidth, imgHeight, offsetX, offsetY, drawWidth, drawHeight);
-  }, []);
+      const drawWidth = imgWidth * scale;
+      const drawHeight = imgHeight * scale;
+
+      const x = (viewportWidth - drawWidth) / 2;
+      const y = (viewportHeight - drawHeight) / 2;
+
+      ctx.clearRect(0, 0, viewportWidth, viewportHeight);
+
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+    },
+    []
+  );
 
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
@@ -241,21 +243,32 @@ export default function CarScroll() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
 
     const ctx = contextRef.current || canvas.getContext("2d");
-    if (ctx) {
-      if (!contextRef.current) contextRef.current = ctx;
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
 
-      const scrollPos = scrollYProgress.get();
-      updateTelemetryAndStyles(scrollPos);
-    }
+    if (!ctx) return;
+
+    contextRef.current = ctx;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    ctx.scale(dpr, dpr);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    const scrollPos = scrollYProgress.get();
+    updateTelemetryAndStyles(scrollPos);
   }, [scrollYProgress, updateTelemetryAndStyles]);
 
   useEffect(() => {
@@ -389,18 +402,18 @@ export default function CarScroll() {
 
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full object-cover block z-0"
+          className="absolute inset-0 w-screen h-screen block z-0"
         />
 
         {!isLoading && (
           <>
             <div className="absolute top-6 left-8 pointer-events-none z-30 font-mono text-[9px] text-white/50 flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="tracking-[0.2em] font-semibold uppercase">SYSTEM: CENTENARIO V12 // ONLINE</span>
+              <span className="tracking-[0.2em] font-semibold uppercase">CENTENARIO V12</span>
             </div>
 
             <div className="absolute top-6 right-8 pointer-events-none z-30 font-mono text-[9px] text-white/50 text-right flex items-center gap-3">
-              <span className="tracking-[0.2em] uppercase">DECONSTRUCTION PROTOCOL</span>
+              <span className="tracking-[0.2em] uppercase">DECONSTRUCTION </span>
               <span
                 ref={disassemblyRef}
                 className="border border-white/20 px-2 py-0.5 rounded text-[9px] font-bold text-white bg-white/5 tracking-wider font-mono"
